@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block title %}Learn a Skill - Skill Swap{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-4">Learn a Skill</h1>
+    <form method="get" action="">
+        <div class="input-group mb-3">
+            <input type="text" class="form-control" name="skill" placeholder="Enter a skill to learn..." value="{{ skill|default('') }}">
+            <button class="btn btn-primary" type="submit">Search</button>
+        </div>
+    </form>
+    {% if skill %}
+    <div class="card mt-4">
+        <div class="card-body">
+            <h3>Learning resources for <strong>{{ skill }}</strong></h3>
+            <ul>
+                <li><a href="https://www.google.com/search?q=learn+{{ skill|urlencode }}" target="_blank">Google: Learn {{ skill }}</a></li>
+                <li><a href="https://www.youtube.com/results?search_query=learn+{{ skill|urlencode }}" target="_blank">YouTube: Learn {{ skill }}</a></li>
+                <li><a href="https://en.wikipedia.org/wiki/{{ skill|replace(' ', '_') }}" target="_blank">Wikipedia: {{ skill }}</a></li>
+            </ul>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

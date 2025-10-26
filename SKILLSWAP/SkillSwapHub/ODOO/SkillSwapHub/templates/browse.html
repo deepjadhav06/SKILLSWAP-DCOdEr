@@ -1,0 +1,1057 @@
+{% extends "base.html" %}
+
+{% block title %}Browse Users - Skill Swap{% endblock %}
+
+{% block additional_css %}
+<style>
+    .browse-container {
+        padding: 2rem 0;
+        min-height: 100vh;
+    }
+    
+    .browse-header {
+        background: var(--bg-glass);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--border-color);
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 0rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .browse-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background: var(--gradient-primary);
+    }
+    
+    .browse-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        background: var(--gradient-primary);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 0.5rem;
+        text-align: center;
+    }
+    
+    .browse-subtitle {
+        text-align: center;
+        color: var(--text-secondary);
+        font-size: 1.1rem;
+        margin-bottom: 2rem;
+    }
+    
+    .search-filters-section {
+        background: var(--bg-glass);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--border-color);
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        position: relative;
+        z-index: 100;
+    }
+    
+    .search-row {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .search-input-wrapper {
+        position: relative;
+    }
+    
+    .search-input {
+        width: 100%;
+        padding: 1rem 1rem 1rem 3rem;
+        border: 1px solid var(--border-color);
+        border-radius: 15px;
+        background: var(--bg-glass);
+        backdrop-filter: blur(20px);
+        color: var(--text-primary);
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .search-input:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        transform: translateY(-2px);
+    }
+    
+    .search-icon {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--primary-color);
+        font-size: 1.1rem;
+    }
+    
+    .search-btn {
+        padding: 1rem 2rem;
+        border: none;
+        border-radius: 15px;
+        background: var(--gradient-primary);
+        color: white;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        white-space: nowrap;
+    }
+    
+    .search-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s ease;
+    }
+    
+    .search-btn:hover::before {
+        left: 100%;
+    }
+    
+    .search-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 30px rgba(79, 70, 229, 0.3);
+    }
+    
+    .filters-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .filter-label {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+    }
+    
+    .filter-select {
+        padding: 0.75rem 1rem;
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        background: var(--bg-glass);
+        backdrop-filter: blur(20px);
+        color: var(--text-primary);
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .filter-select:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    }
+    
+    .results-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding: 1rem 0;
+    }
+    
+    .results-count {
+        font-size: 1rem;
+        color: var(--text-secondary);
+    }
+    
+    .results-count strong {
+        color: var(--primary-color);
+    }
+    
+    .view-toggle {
+        display: flex;
+        gap: 0.5rem;
+    }
+    
+    .view-btn {
+        padding: 0.5rem;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        background: var(--bg-glass);
+        backdrop-filter: blur(20px);
+        color: var(--text-secondary);
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .view-btn.active {
+        background: var(--gradient-primary);
+        color: white;
+        border-color: var(--primary-color);
+    }
+    
+    .view-btn:hover {
+        transform: translateY(-2px);
+    }
+    
+    .users-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 2rem;
+        margin-bottom: 3rem;
+    }
+    
+    .users-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        margin-bottom: 3rem;
+    }
+    
+    .user-card {
+        background: var(--bg-glass);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--border-color);
+        border-radius: 20px;
+        padding: 2rem;
+        transition: all 0.4s ease;
+        position: relative;
+        overflow: hidden;
+        cursor: pointer;
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    
+    .user-card.visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    
+    .user-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: var(--gradient-primary);
+        opacity: 0.05;
+        transition: left 0.3s ease;
+    }
+    
+    .user-card:hover::before {
+        left: 0;
+    }
+    
+    .user-card:hover {
+        transform: translateY(-8px) scale(1.02);
+        box-shadow: var(--shadow-heavy);
+        border-color: var(--primary-color);
+    }
+    
+    .glow-card {
+        position: relative;
+    }
+    
+    .glow-card::after {
+        content: '';
+        position: absolute;
+        top: -2px;
+        left: -2px;
+        right: -2px;
+        bottom: -2px;
+        background: var(--gradient-primary);
+        border-radius: inherit;
+        z-index: -1;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        filter: blur(15px);
+    }
+    
+    .glow-card:hover::after {
+        opacity: 0.4;
+    }
+    
+    .user-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+    
+    .user-avatar {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid var(--primary-color);
+        margin-right: 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .user-avatar:hover {
+        transform: scale(1.1);
+        box-shadow: 0 10px 30px rgba(79, 70, 229, 0.3);
+    }
+    
+    .user-avatar-placeholder {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        background: var(--gradient-primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin-right: 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .user-avatar-placeholder:hover {
+        transform: scale(1.1);
+        box-shadow: 0 10px 30px rgba(79, 70, 229, 0.3);
+    }
+    
+    .user-info h3 {
+        color: var(--text-primary);
+        margin: 0 0 0.5rem 0;
+        font-size: 1.3rem;
+        font-weight: 600;
+    }
+    
+    .user-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+    
+    .meta-item {
+        display: flex;
+        align-items: center;
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+    }
+    
+    .meta-item i {
+        color: var(--primary-color);
+        margin-right: 0.5rem;
+        width: 16px;
+    }
+    
+    .user-skills {
+        margin-bottom: 1.5rem;
+    }
+    
+    .skills-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 0.75rem;
+        display: flex;
+        align-items: center;
+    }
+    
+    .skills-title i {
+        color: var(--accent-color);
+        margin-right: 0.5rem;
+    }
+    
+    .skill-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .skill-tag {
+        background: rgba(79, 70, 229, 0.1);
+        color: var(--primary-color);
+        padding: 0.375rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        border: 1px solid rgba(79, 70, 229, 0.2);
+        transition: all 0.3s ease;
+    }
+    
+    .skill-tag:hover {
+        background: rgba(79, 70, 229, 0.2);
+        transform: translateY(-2px);
+    }
+    
+    .user-stats {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 1.5rem;
+        padding: 1rem;
+        background: var(--bg-secondary);
+        border-radius: 12px;
+    }
+    
+    .stat-item {
+        text-align: center;
+    }
+    
+    .stat-number {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        display: block;
+    }
+    
+    .stat-label {
+        font-size: 0.75rem;
+        color: var(--text-secondary);
+    }
+    
+    .user-actions {
+        display: flex;
+        gap: 0.75rem;
+    }
+    
+    .btn-action {
+        flex: 1;
+        padding: 0.75rem 1rem;
+        border-radius: 12px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        text-decoration: none;
+        text-align: center;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .btn-action::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s ease;
+    }
+    
+    .btn-action:hover::before {
+        left: 100%;
+    }
+    
+    .btn-primary-action {
+        background: var(--gradient-primary);
+        color: white;
+    }
+    
+    .btn-primary-action:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(79, 70, 229, 0.3);
+        color: white;
+    }
+    
+    .btn-outline-action {
+        background: transparent;
+        color: var(--text-primary);
+        border: 1px solid var(--border-color);
+    }
+    
+    .btn-outline-action:hover {
+        background: var(--bg-secondary);
+        transform: translateY(-2px);
+        color: var(--text-primary);
+    }
+    
+    .pagination-wrapper {
+        display: flex;
+        justify-content: center;
+        margin-top: 3rem;
+    }
+    
+    .pagination {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+    }
+    
+    .page-btn {
+        padding: 0.75rem 1rem;
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        background: var(--bg-glass);
+        backdrop-filter: blur(20px);
+        color: var(--text-primary);
+        text-decoration: none;
+        transition: all 0.3s ease;
+        font-weight: 500;
+        min-width: 44px;
+        text-align: center;
+    }
+    
+    .page-btn:hover {
+        background: var(--bg-secondary);
+        transform: translateY(-2px);
+        color: var(--text-primary);
+    }
+    
+    .page-btn.active {
+        background: var(--gradient-primary);
+        color: white;
+        border-color: var(--primary-color);
+    }
+    
+    .page-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+    }
+    
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(10px);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+    }
+    
+    .loading-spinner {
+        width: 60px;
+        height: 60px;
+        border: 4px solid transparent;
+        border-top: 4px solid var(--primary-color);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    .no-results {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: var(--text-secondary);
+        grid-column: 1 / -1;
+    }
+    
+    .no-results i {
+        font-size: 4rem;
+        color: var(--primary-color);
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+    
+    .no-results h3 {
+        color: var(--text-primary);
+        margin-bottom: 1rem;
+        font-size: 1.5rem;
+    }
+    
+    .no-results p {
+        font-size: 1.1rem;
+        margin-bottom: 2rem;
+    }
+    
+    .clear-filters-btn {
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 12px;
+        background: var(--gradient-primary);
+        color: white;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .clear-filters-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(79, 70, 229, 0.3);
+    }
+    
+    /* List view styles */
+    .user-card.list-view {
+        display: flex;
+        align-items: center;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .user-card.list-view .user-header {
+        margin-bottom: 0;
+        margin-right: 2rem;
+        min-width: 200px;
+    }
+    
+    .user-card.list-view .user-skills {
+        flex: 1;
+        margin-bottom: 0;
+        margin-right: 2rem;
+    }
+    
+    .user-card.list-view .user-actions {
+        margin-left: auto;
+        flex-direction: column;
+        min-width: 150px;
+    }
+    
+    @media (max-width: 1024px) {
+        .users-grid {
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        }
+        
+        .search-row {
+            grid-template-columns: 1fr;
+        }
+        
+        .filters-row {
+            grid-template-columns: 1fr;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .browse-container {
+            padding: 1rem 0;
+        }
+        
+        .browse-header,
+        .search-filters-section {
+            padding: 1.5rem;
+        }
+        
+        .browse-title {
+            font-size: 2rem;
+        }
+        
+        .users-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .user-card {
+            padding: 1.5rem;
+        }
+        
+        .user-actions {
+            flex-direction: column;
+        }
+        
+        .user-card.list-view {
+            flex-direction: column;
+            text-align: center;
+        }
+        
+        .user-card.list-view .user-header,
+        .user-card.list-view .user-skills {
+            margin-right: 0;
+            margin-bottom: 1rem;
+        }
+        
+        .user-card.list-view .user-actions {
+            margin-left: 0;
+            flex-direction: row;
+        }
+        
+        .search-filters-section {
+            position: static;
+        }
+    }
+    
+    /* Smooth scrolling */
+    html {
+        scroll-behavior: smooth;
+    }
+    
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+        width: 8px;
+    }
+    
+    ::-webkit-scrollbar-track {
+        background: var(--bg-secondary);
+    }
+    
+    ::-webkit-scrollbar-thumb {
+        background: var(--primary-color);
+        border-radius: 4px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+        background: var(--secondary-color);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="browse-container">
+    <div class="container">
+        <!-- Loading Overlay -->
+        <div class="loading-overlay" id="loadingOverlay">
+            <div class="loading-spinner"></div>
+        </div>
+        
+        <!-- Browse Header -->
+        <div class="browse-header fade-in">
+            <h1 class="browse-title">Discover Amazing People</h1>
+            <p class="browse-subtitle">Connect with skilled individuals ready to share their knowledge and learn from you</p>
+        </div>
+        
+        <!-- Search and Filters -->
+        <div class="search-filters-section fade-in">
+            <form action="{{ url_for('main.browse') }}" method="GET" id="searchForm">
+                <div class="search-row">
+                    <div class="search-input-wrapper">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" 
+                               class="search-input" 
+                               id="searchInput" 
+                               name="search"
+                               value="{{ search_query }}"
+                               placeholder="Search by name, skills, or location..."
+                               autocomplete="off">
+                    </div>
+                    <button type="submit" class="search-btn" id="searchBtn">
+                        <i class="fas fa-search me-2"></i>
+                        Search
+                    </button>
+                </div>
+            
+            <div class="filters-row">
+                <div class="filter-group">
+                    <label class="filter-label">Skill Category</label>
+                    <select class="filter-select" id="skillFilter" name="skill">
+                        <option value="">All Skills</option>
+                        {% for skill in skills %}
+                        <option value="{{ skill.name }}" {% if skill_filter == skill.name %}selected{% endif %}>{{ skill.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label class="filter-label">Availability</label>
+                    <select class="filter-select" id="availabilityFilter" name="availability">
+                        <option value="">Any Time</option>
+                        {% for availability in availabilities %}
+                        <option value="{{ availability }}" {% if availability_filter == availability %}selected{% endif %}>{{ availability|title }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label class="filter-label">Location</label>
+                    <select class="filter-select" id="locationFilter" name="location">
+                        <option value="">Any Location</option>
+                        {% for location in locations %}
+                            {% if location %}
+                                <option value="{{ location }}" {% if location_filter == location %}selected{% endif %}>{{ location }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label class="filter-label">Sort By</label>
+                    <select class="filter-select" id="sortFilter" name="sort">
+                        <option value="newest" {% if sort_by == 'newest' %}selected{% endif %}>Newest Members</option>
+                        <option value="rating" {% if sort_by == 'rating' %}selected{% endif %}>Highest Rated</option>
+                        <option value="active" {% if sort_by == 'active' %}selected{% endif %}>Most Active</option>
+                        <option value="skills" {% if sort_by == 'skills' %}selected{% endif %}>Most Skills</option>
+                    </select>
+                </div>
+            </div>
+            </form>
+        </div>
+        
+        <!-- Results Info and View Toggle -->
+        <div class="results-info fade-in">
+            <div class="results-count" id="resultsCount">
+                Found <strong>{{ users|length }}</strong> amazing people ready to swap skills
+                {% if total_users > users|length %}
+                    (showing page {{ current_page }} of {{ total_pages }})
+                {% endif %}
+            </div>
+            <div class="view-toggle">
+                <button class="view-btn active" id="gridViewBtn" title="Grid View">
+                    <i class="fas fa-th"></i>
+                </button>
+                <button class="view-btn" id="listViewBtn" title="List View">
+                    <i class="fas fa-list"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Users Container -->
+        <div class="users-grid" id="usersContainer">
+            {% if users %}
+                {% for user in users %}
+                    <div class="user-card glow-card visible">
+                        <div class="user-header">
+                            {% if user.photo_url %}
+                                <img src="{{ url_for('static', filename=user.photo_url) }}" alt="{{ user.name }}" class="user-avatar">
+                            {% else %}
+                                <div class="user-avatar-placeholder">{{ user.name[0] }}</div>
+                            {% endif %}
+                            <div class="user-info">
+                                <h3>{{ user.name }}</h3>
+                                <div class="user-meta">
+                                    {% if user.location %}
+                                    <div class="meta-item">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                        {{ user.location }}
+                                    </div>
+                                    {% endif %}
+                                    {% if user.availability %}
+                                    <div class="meta-item">
+                                        <i class="fas fa-clock"></i>
+                                        {{ user.availability|title }}
+                                    </div>
+                                    {% endif %}
+                                    <div class="meta-item">
+                                        {% if user.last_login and (now - user.last_login).total_seconds() < 3600 %}
+                                            <i class="fas fa-circle" style="color: #10b981; font-size: 0.6rem;"></i> Online
+                                        {% else %}
+                                            <i class="fas fa-circle" style="color: #6b7280; font-size: 0.6rem;"></i> Offline
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="user-skills">
+                            <div class="skills-title">
+                                <i class="fas fa-star"></i>
+                                Skills Offered
+                            </div>
+                            <div class="skill-tags">
+                                {% set offered_skills = user.get_offered_skills() %}
+                                {% for skill in offered_skills[:4] %}
+                                    <span class="skill-tag">{{ skill.name }}
+                                        {% if can_learn(skill.name) %}
+                                        <a class="btn btn-xs btn-link" style="padding:0 0.3em; font-size:0.9em;" href="{{ url_for('main.learn') }}?skill={{ skill.name|urlencode }}">Learn</a>
+                                        {% endif %}
+                                    </span>
+                                {% endfor %}
+                                {% if offered_skills|length > 4 %}
+                                    <span class="skill-tag">+{{ offered_skills|length - 4 }} more</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="user-stats">
+                            <div class="stat-item">
+                                <span class="stat-number">{{ user.get_average_rating()|round(1) }}</span>
+                                <div class="stat-label">Rating</div>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number">{{ user.get_completed_swaps_count() }}</span>
+                                <div class="stat-label">Swaps</div>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number">{{ user.get_offered_skills()|length }}</span>
+                                <div class="stat-label">Skills</div>
+                            </div>
+                        </div>
+                        
+                        <div class="user-actions">
+                            {% if current_user and current_user.id != user.id %}
+                                <a href="{{ url_for('main.swap_request_form', to_user_id=user.id) }}" class="btn-action btn-primary-action">
+                                    <i class="fas fa-handshake"></i>
+                                    Request Swap
+                                </a>
+                            {% endif %}
+                            <a href="{{ url_for('main.public_profile', user_id=user.id) }}" class="btn-action {% if not current_user or current_user.id == user.id %}btn-primary-action{% else %}btn-outline-action{% endif %}">
+                                <i class="fas fa-eye"></i>
+                                View Profile
+                            </a>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="no-results">
+                    <i class="fas fa-search"></i>
+                    <h3>No users found</h3>
+                    <p>Try adjusting your search criteria or filters to find more people.</p>
+                    <a href="{{ url_for('main.browse') }}" class="clear-filters-btn">
+                        Clear All Filters
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- Pagination -->
+        {% if total_pages > 1 %}
+        <div class="pagination-wrapper">
+            <div class="pagination" id="pagination">
+                <!-- Previous button -->
+                {% if current_page > 1 %}
+                    <a href="{{ url_for('main.browse', page=current_page-1, search=search_query, skill=skill_filter, availability=availability_filter, location=location_filter, sort=sort_by) }}" class="page-btn">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                {% else %}
+                    <button class="page-btn" disabled>
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                {% endif %}
+                
+                <!-- First page -->
+                {% if current_page > 3 %}
+                    <a href="{{ url_for('main.browse', page=1, search=search_query, skill=skill_filter, availability=availability_filter, location=location_filter, sort=sort_by) }}" class="page-btn">1</a>
+                    {% if current_page > 4 %}
+                        <span class="page-btn" style="border: none; background: transparent;">...</span>
+                    {% endif %}
+                {% endif %}
+                
+                <!-- Page numbers -->
+                {% set start_page = current_page - 2 if current_page > 2 else 1 %}
+                {% set end_page = current_page + 2 if current_page + 2 <= total_pages else total_pages %}
+                
+                {% for page_num in range(start_page, end_page + 1) %}
+                    {% if page_num == current_page %}
+                        <span class="page-btn active">{{ page_num }}</span>
+                    {% else %}
+                        <a href="{{ url_for('main.browse', page=page_num, search=search_query, skill=skill_filter, availability=availability_filter, location=location_filter, sort=sort_by) }}" class="page-btn">{{ page_num }}</a>
+                    {% endif %}
+                {% endfor %}
+                
+                <!-- Last page -->
+                {% if current_page < total_pages - 2 %}
+                    {% if current_page < total_pages - 3 %}
+                        <span class="page-btn" style="border: none; background: transparent;">...</span>
+                    {% endif %}
+                    <a href="{{ url_for('main.browse', page=total_pages, search=search_query, skill=skill_filter, availability=availability_filter, location=location_filter, sort=sort_by) }}" class="page-btn">{{ total_pages }}</a>
+                {% endif %}
+                
+                <!-- Next button -->
+                {% if current_page < total_pages %}
+                    <a href="{{ url_for('main.browse', page=current_page+1, search=search_query, skill=skill_filter, availability=availability_filter, location=location_filter, sort=sort_by) }}" class="page-btn">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                {% else %}
+                    <button class="page-btn" disabled>
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block additional_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // DOM Elements
+        const searchForm = document.getElementById('searchForm');
+        const searchInput = document.getElementById('searchInput');
+        const searchBtn = document.getElementById('searchBtn');
+        const skillFilter = document.getElementById('skillFilter');
+        const availabilityFilter = document.getElementById('availabilityFilter');
+        const locationFilter = document.getElementById('locationFilter');
+        const sortFilter = document.getElementById('sortFilter');
+        const usersContainer = document.getElementById('usersContainer');
+        const gridViewBtn = document.getElementById('gridViewBtn');
+        const listViewBtn = document.getElementById('listViewBtn');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        
+        // View toggle event listeners
+        gridViewBtn.addEventListener('click', function() {
+            usersContainer.className = 'users-grid';
+            this.classList.add('active');
+            listViewBtn.classList.remove('active');
+            
+            // Save preference
+            localStorage.setItem('skillswap-view-preference', 'grid');
+        });
+        
+        listViewBtn.addEventListener('click', function() {
+            usersContainer.className = 'users-list';
+            this.classList.add('active');
+            gridViewBtn.classList.remove('active');
+            
+            // Save preference
+            localStorage.setItem('skillswap-view-preference', 'list');
+        });
+        
+        // Load view preference
+        const viewPreference = localStorage.getItem('skillswap-view-preference');
+        if (viewPreference === 'list') {
+            listViewBtn.click();
+        }
+        
+        // Auto-submit form on filter change
+        skillFilter.addEventListener('change', function() {
+            searchForm.submit();
+        });
+        
+        availabilityFilter.addEventListener('change', function() {
+            searchForm.submit();
+        });
+        
+        locationFilter.addEventListener('change', function() {
+            searchForm.submit();
+        });
+        
+        sortFilter.addEventListener('change', function() {
+            searchForm.submit();
+        });
+        
+        // Show loading overlay when form is submitted
+        searchForm.addEventListener('submit', function() {
+            loadingOverlay.style.display = 'flex';
+        });
+        
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // Ctrl/Cmd + K for search focus
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                e.preventDefault();
+                searchInput.focus();
+            }
+            
+            // Escape to clear search
+            if (e.key === 'Escape' && document.activeElement === searchInput) {
+                searchInput.value = '';
+                searchForm.submit();
+            }
+        });
+        
+        // Auto-focus search input
+        searchInput.focus();
+        
+        // Add animation to user cards
+        document.querySelectorAll('.user-card').forEach((card, index) => {
+            setTimeout(() => {
+                card.classList.add('visible');
+            }, index * 100);
+        });
+    });
+    
+    // Global function to clear all filters
+    window.clearAllFilters = function() {
+        window.location.href = "{{ url_for('main.browse') }}";
+    };
+</script>
+{% endblock %}

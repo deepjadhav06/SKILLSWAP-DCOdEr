@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Skill Swap - Connect, Learn, Grow Together{% endblock %}</title>
+    
+    <!-- Meta Tags -->
+    <meta name="description" content="Join Skill Swap to exchange skills with others. Learn new abilities while teaching what you know best in our community-driven platform.">
+    <meta name="keywords" content="skill exchange, learning, education, community, swap skills, online learning">
+    <meta name="author" content="Skill Swap Platform">
+    
+    <!-- Open Graph Tags -->
+    <meta property="og:title" content="{% block og_title %}Skill Swap - Connect, Learn, Grow Together{% endblock %}">
+    <meta property="og:description" content="Join our community of learners and share your skills with others.">
+    <meta property="og:image" content="{{ url_for('static', filename='images/og-image.jpg') }}">
+    <meta property="og:url" content="{{ request.url }}">
+    <meta property="og:type" content="website">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+    
+    <!-- Block for additional CSS -->
+    {% block additional_css %}{% endblock %}
+</head>
+<body>
+    {% include 'chatbot_widget.html' %}
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <!-- Brand -->
+            <a class="navbar-brand d-flex align-items-center py-0" href="{{ url_for('main.index') }}" style="height: 50px;">
+                <img src="{{ url_for('static', filename='img/logo-skillswap.png') }}" alt="Skill Swap Logo" style="height: 100px; max-height: 100%; width: auto;" class="me-2">
+            </a>
+            <!-- Mobile Toggle -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon">
+                    <i class="fas fa-bars"></i>
+                </span>
+            </button>
+            
+            <!-- Navigation Links -->
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('main.browse') }}">
+                            <i class="fas fa-search me-1"></i>
+                            <span data-translate="browse-users">Browse Users</span>
+                        </a>
+                    </li>
+                    {% if can_access_learn() %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('main.learn') }}">
+                            <i class="fas fa-graduation-cap me-1"></i>
+                            <span data-translate="learn">Learn</span>
+                        </a>
+                    </li>
+                    {% endif %}
+                    {% if session.user_id %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('main.dashboard') }}">
+                            <i class="fas fa-tachometer-alt me-1"></i>
+                            <span data-translate="dashboard">Dashboard</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('swaps.swap_list') }}">
+                            <i class="fas fa-exchange-alt me-1"></i>
+                            <span data-translate="my-swaps">My Swaps</span>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+                
+                <!-- User Menu -->
+                <ul class="navbar-nav">
+                    <!-- Language Selector -->
+                    <li class="nav-item dropdown me-2">
+                        <a class="nav-link dropdown-toggle" href="#" id="languageDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-globe me-1"></i>
+                            <span class="d-none d-md-inline">Language</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end glass-container">
+                            <li><a class="dropdown-item language-option" href="#" data-lang="en">🌐 English</a></li>
+                            <li><a class="dropdown-item language-option" href="#" data-lang="hi">🇮🇳 हिन्दी</a></li>
+                            <li><a class="dropdown-item language-option" href="#" data-lang="gu">🇬🇺 ગુજરાતી</a></li>
+                        </ul>
+                    </li>
+                    
+                    <!-- Theme Toggle -->
+                    <li class="nav-item me-2">
+                        <a class="nav-link theme-toggle" href="#" title="Toggle Theme">
+                            <i class="fas fa-moon"></i>
+                        </a>
+                    </li>
+                    
+                    {% if session.user_id %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-user me-1"></i>
+                            <span data-translate="my-account">My Account</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end glass-container">
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('main.profile') }}">
+                                    <i class="fas fa-user-circle me-2"></i>
+                                    <span data-translate="profile">Profile</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('main.manage_skills') }}">
+                                    <i class="fas fa-cogs me-2"></i>
+                                    <span data-translate="manage-skills">Manage Skills</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('swaps.swap_list') }}">
+                                    <i class="fas fa-exchange-alt me-2"></i>
+                                    <span data-translate="my-swaps">My Swaps</span>
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('main.logout') }}">
+                                    <i class="fas fa-sign-out-alt me-2"></i>
+                                    <span data-translate="logout">Logout</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('main.login') }}">
+                            <i class="fas fa-sign-in-alt me-1"></i>
+                            <span data-translate="login">Login</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('main.register') }}">
+                            <i class="fas fa-user-plus me-1"></i>
+                            <span data-translate="register">Register</span>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="container mt-3">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                        <i class="fas fa-{{ 'exclamation-circle' if category == 'error' else 'check-circle' if category == 'success' else 'info-circle' }} me-2"></i>
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+    
+    <!-- Main Content -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+    
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-4 col-md-6 mb-4">
+                        <div class="footer-section">
+                            <a class="footer-brand d-flex flex-column align-items-center justify-content-center mb-3" href="{{ url_for('main.index') }}"></a>
+                                <img src="{{ url_for('static', filename='img/logo-skillswap.png') }}" alt="Skill Swap Logo" height="100">
+                            </a>
+                            <p class="footer-text" data-translate="tagline">Swap skills. Grow together.</p>
+                            <div class="social-links">
+                                <a href="https://www.instagram.com/skill_swap_3661/" class="me-3"><i class="fab fa-instagram"></i></a>
+                                <a href="https://www.linkedin.com/company/skill-swap-3661/" class="me-3"><i class="fab fa-linkedin-in"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-2 col-md-6 mb-4">
+                        <div class="footer-section">
+                            <h6 class="mb-3" data-translate="platform">Platform</h6>
+                            <ul class="footer-links list-unstyled">
+                                <li><a href="{{ url_for('main.index') }}" data-translate="home">Home</a></li>
+                                <li><a href="{{ url_for('main.browse') }}" data-translate="browse-users">Browse Users</a></li>
+                                {% if not session.user_id %}
+                                <li><a href="{{ url_for('main.register') }}" data-translate="join-now">Join Now</a></li>
+                                {% endif %}
+                                <li><a href="#" data-translate="how-it-works">How It Works</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-2 col-md-6 mb-4">
+                        <div class="footer-section">
+                            <h6 class="mb-3" data-translate="support">Support</h6>
+                            <ul class="footer-links list-unstyled">
+                                <li><a href="#" data-translate="help-center">Help Center</a></li>
+                                <li><a href="#" data-translate="community-guidelines">Community Guidelines</a></li>
+                                <li><a href="#" data-translate="safety-tips">Safety Tips</a></li>
+                                <li><a href="#" data-translate="contact-us">Contact Us</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-2 col-md-6 mb-4">
+                        <div class="footer-section">
+                            <h6 class="mb-3" data-translate="legal">Legal</h6>
+                            <ul class="footer-links list-unstyled">
+                                <li><a href="#" data-translate="privacy-policy">Privacy Policy</a></li>
+                                <li><a href="#" data-translate="terms-of-service">Terms of Service</a></li>
+                                <li><a href="#" data-translate="cookie-policy">Cookie Policy</a></li>
+                                <li><a href="#" data-translate="dmca">DMCA</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-2 col-md-6 mb-4">
+                        <div class="footer-section">
+                            <h6 class="mb-3" data-translate="company">Company</h6>
+                            <ul class="footer-links list-unstyled">
+                                <li><a href="#" data-translate="about-us">About Us</a></li>
+                                <li><a href="#" data-translate="careers">Careers</a></li>
+                                <li><a href="#" data-translate="press">Press</a></li>
+                                <li><a href="#" data-translate="blog">Blog</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <hr class="my-4" style="border-color: var(--border-color);">
+                
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <p class="footer-text mb-0" data-translate="footer-text">
+                            © 2025 Skill Swap Platform. Connect, Learn, Grow Together.
+                        </p>
+                    </div>
+                    <div class="col-md-6 text-md-end">
+                        <div class="footer-badges">
+                            <span class="badge bg-primary me-2">
+                                <i class="fas fa-shield-alt me-1"></i>
+                                <span data-translate="secure">Secure</span>
+                            </span>
+                            <span class="badge bg-success me-2">
+                                <i class="fas fa-users me-1"></i>
+                                <span data-translate="community-driven">Community Driven</span>
+                            </span>
+                            <span class="badge bg-info">
+                                <i class="fas fa-globe me-1"></i>
+                                <span data-translate="global">Global</span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    
+    <!-- Block for additional JavaScript -->
+    {% block additional_js %}{% endblock %}
+    
+    <!-- Scroll to Top Button -->
+    <button id="scrollToTop" class="scroll-to-top" style="display: none;">
+        <i class="fas fa-chevron-up"></i>
+    </button>
+    
+    <script>
+        // Scroll to top functionality
+        const scrollToTopBtn = document.getElementById('scrollToTop');
+        
+        window.addEventListener('scroll', function() {
+            if (window.pageYOffset > 300) {
+                scrollToTopBtn.style.display = 'block';
+            } else {
+                scrollToTopBtn.style.display = 'none';
+            }
+        });
+        
+        scrollToTopBtn.addEventListener('click', function() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+    </script>
+    
+    <style>
+        .scroll-to-top {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            background: var(--gradient-primary);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            z-index: 1000;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-light);
+        }
+        
+        .scroll-to-top:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-heavy);
+        }
+        
+        .navbar-toggler {
+            border: none;
+            padding: 0.25rem 0.5rem;
+        }
+        
+        .navbar-toggler:focus {
+            box-shadow: none;
+        }
+        
+        .navbar-toggler i {
+            color: var(--text-primary);
+            font-size: 1.2rem;
+        }
+        
+        .dropdown-menu {
+            border: none;
+            margin-top: 0.5rem;
+        }
+        
+        .dropdown-item {
+            color: var(--text-primary);
+            padding: 0.75rem 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .dropdown-item:hover {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            transform: translateX(5px);
+        }
+        
+        .social-links a {
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+        
+        .social-links a:hover {
+            color: var(--primary-color);
+            transform: translateY(-2px);
+        }
+        
+        .footer-section h5, .footer-section h6 {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+        
+        .footer-links li {
+            margin-bottom: 0.5rem;
+        }
+        
+        .footer-badges .badge {
+            font-size: 0.8rem;
+            padding: 0.5rem 0.75rem;
+        }
+    </style>
+</body>
+</html>
